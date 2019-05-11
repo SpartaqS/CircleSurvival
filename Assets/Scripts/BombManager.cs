@@ -3,43 +3,62 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class BombManager : MonoBehaviour , IBombManager
+public class BombManager : IBombManager // Dodac coroutine runnera zzeby mozna bylo robic z niego instantiate
 {
 
-    [SerializeField] List<GameObject> ActiveBombs;
-    [SerializeField] List<GameObject> InactiveBombs;
+    [SerializeField] List<GameObject> ActiveBombs = new List<GameObject>();
+    [SerializeField] List<GameObject> InactiveBombs = new List<GameObject>();
 
-    [SerializeField] GameObject bombPrefab;
-    [SerializeField] Canvas spawningCanvas;
+    GameObject bombPrefab;
+    Canvas spawningCanvas;
+    ICoroutineRunner coroutineRunner;
     GameObject currentBomb;
     RectTransform currentBombRectTransform;
 
     public Vector3 ImageScale;
 
     internal int gameplayWidthMin,gameplayWidthMax,gameplayHeightMin,gameplayHeightMax;
+    bool keepBombing;
+    float bombInterval;
 
-    Action endGame; // callback do wszystkiego ze gra sie skonczyla
+    Action endTheGame; // callback do wszystkiego ze gra sie skonczyla
 
-    // Start is called before the first frame update
-    void Awake()
+    public BombManager(ICoroutineRunner coroutineRunner, GameObject bombPrefab, Canvas spawningCanvas, Action endGameHighscore)
     {
-        ImageScale = new Vector3(1, 1, 1);
+        Debug.Log("BombManager created");
+        endTheGame += endGameHighscore;
 
-        for (int i = 0; i < 20; i++)
-            BombPlace();
+        this.coroutineRunner = coroutineRunner;
+        this.bombPrefab = bombPrefab;
+        this.spawningCanvas = spawningCanvas;
+
+        bombInterval = 2f;
+
+     //   List<GameObject> ActiveBombs = new List<GameObject>();
+    //    List<GameObject> InactiveBombs = new List<GameObject>();
     }
 
-    void Update()
+    public void StartRunning()
     {
-        foreach (GameObject bomb in ActiveBombs)
+        ImageScale = new Vector3(1, 1, 1);
+        keepBombing = true;
+
+        coroutineRunner.StartCoroutine(spawnBombs());
+    }
+
+    IEnumerator spawnBombs()
+    {
+        while (keepBombing)
         {
-            bomb.GetComponent<Bomb>().ReduceDetonateTime(Time.deltaTime);
+            BombPlace();
+            bombInterval = Mathf.Max(0.2f, bombInterval - 0.1f);
+            yield return new WaitForSeconds(bombInterval);
         }
     }
 
     public void BombPlace()
     {
-        currentBomb = Instantiate(bombPrefab);
+        GameObject currentBomb = GameObject.Instantiate(bombPrefab);
         currentBombRectTransform = currentBomb.GetComponent<RectTransform>();
 
         currentBomb.transform.SetParent(spawningCanvas.transform);
@@ -68,8 +87,13 @@ public class BombManager : MonoBehaviour , IBombManager
                 break;
             case 1: //bomba wybuchla
                 invokingBomb.SetActive(false);
+                keepBombing = false;
+                endTheGame.Invoke();
 
-                endGame.Invoke();
+                foreach (GameObject temp in ActiveBombs)
+                {
+                    temp.GetComponent<Bomb>().isArmed = false; // tutaj mozna dodac ze szybciej bomby wybuchaja czy cos za pomoca detonateSpeedFactor
+                }
                 // tutaj trzeba dodac wybuch bomby, pokazanie czasu (callback do UI)
                 Debug.Log(invokingBomb + " exploded");
                 break;

@@ -12,7 +12,8 @@ public class Bomb : MonoBehaviour, IPointerDownHandler
     float startingDetonateTime;
     [SerializeField] float timeToDetonate;
 
-    bool isArmed;
+    public bool isArmed;
+    float detonationSpeedFactor = 1f;
 
     Action<GameObject,int> bombStatus;
 
@@ -20,25 +21,29 @@ public class Bomb : MonoBehaviour, IPointerDownHandler
     {
         isArmed = false;
     }
-    // tutaj bedzie krzyczec ze sie wylaczylo bombe !!!
+
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData) 
     {
         bombStatus.Invoke(this.gameObject, 0);
-        this.gameObject.SetActive(false); // robocze BombManager to bedzie robic!!!
     }
 
-    public void ReduceDetonateTime(float timeReduct)
+    void Update()
     {
-        timeToDetonate -= timeReduct;
-        TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
-        if(timeToDetonate <= 0)
-            bombStatus.Invoke(this.gameObject, 1);
+        if (isArmed)
+        {
+            timeToDetonate -= Time.deltaTime * detonationSpeedFactor;
+            TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
+            if (timeToDetonate <= 0)
+                bombStatus.Invoke(this.gameObject, 1);
+        }
     }
 
-    public void CircleReset(float timeToDetonate,Action<GameObject,int> bombStatus)
+    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatus)
     {
+        Debug.Log("Circle spawned");
         this.timeToDetonate = timeToDetonate;
         startingDetonateTime = timeToDetonate;
         this.bombStatus += bombStatus;
+        isArmed = true;
     }
 }

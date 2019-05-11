@@ -8,7 +8,17 @@ public class HighscoreDisplay : MonoBehaviour
     {
         float highscore = ScoreSavingSysytem.ReadHighscore();
 
-        textField.text = "Highscore: " + highscore;
+        if(highscore < 0.1f)
+        textField.text = "Highscore:\nNo games finished yet!";
+        else
+        {
+            string minutes = ((int)highscore / 60).ToString();
+            string seconds = (highscore % 60).ToString("00");
+            string miliseconds = ((highscore * 100) % 100).ToString("00");
+
+            textField.text = "Highscore:\n" + minutes + ":" + seconds + ":" + miliseconds;
+        }
+
         
     }
 

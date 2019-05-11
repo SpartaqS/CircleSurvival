@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class TimerAndDisplay : MonoBehaviour
 {
-    float time;
+    public float time;
+    private bool tickTime = true;
+    string minutes, seconds, miliseconds;
 
     [SerializeField] Text displayedText;
     // Start is called before the first frame update
@@ -18,12 +20,37 @@ public class TimerAndDisplay : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        time += Time.deltaTime;
+        if (tickTime)
+        {
+            time += Time.deltaTime;
 
-        string minutes = ((int)time / 60).ToString();
-        string seconds = (time % 60).ToString("00");
-        string miliseconds = ((time *100)%100).ToString("00");
+            minutes = ((int)time / 60).ToString();
+            seconds = (time % 60).ToString("00");
+            miliseconds = ((time *100)%100).ToString("00");
 
-        displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds;
+            displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds;
+        }
+        else
+        {
+            float latestTime = time;
+            if (ScoreSavingSysytem.ReadHighscore() < latestTime)
+            {
+                ScoreSavingSysytem.SaveHighscore(latestTime);
+                displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds + "\nNew highscore!";
+            }
+            else
+            {
+                displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds+ "\nBetter luck next time!";
+            }
+        }
+
+
+    }
+    public void EndGameActions()
+    {
+        Debug.Log("Timer got the message");
+
+        tickTime = false;
+
     }
 }
