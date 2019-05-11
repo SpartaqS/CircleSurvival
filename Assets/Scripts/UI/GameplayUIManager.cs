@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class GameplayUIManage : MonoBehaviour
+public class GameplayUIManager : MonoBehaviour
 {
     public Button switchSceneButton;
     // Start is called before the first frame update
