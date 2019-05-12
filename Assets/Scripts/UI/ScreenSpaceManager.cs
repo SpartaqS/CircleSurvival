@@ -14,16 +14,15 @@ public class ScreenSpaceManager : MonoBehaviour
     int rScreenHeight = 1920;
     float widthScale, heightScale;
     int rHUDHeight = 400;
-    public const int borderDistanceOffsetSmall = 32;
-    public const int borderDistanceOffsetBig = 160; // OffsetSmall + 2*64 - promień bomb
+    public const int borderDistanceOffset = 96; // promien bomby + 32
     // heightMax to po prostu rScreenHeight
 
     internal void CalculateGameplayArea()
     {
-        bombManager.gameplayWidthMin = (int)(borderDistanceOffsetSmall);
-        bombManager.gameplayWidthMax = (int)((rScreenWidth - borderDistanceOffsetBig));
-        bombManager.gameplayHeightMin = (int)((rHUDHeight + borderDistanceOffsetSmall));
-        bombManager.gameplayHeightMax = (int)((rScreenHeight - borderDistanceOffsetBig));
+        bombManager.gameplayWidthMin = (int)(borderDistanceOffset);
+        bombManager.gameplayWidthMax = (int)((rScreenWidth - borderDistanceOffset));
+        bombManager.gameplayHeightMin = (int)((rHUDHeight + borderDistanceOffset));
+        bombManager.gameplayHeightMax = (int)((rScreenHeight - borderDistanceOffset));
     }
 
 }
