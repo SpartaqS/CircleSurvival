@@ -27,7 +27,7 @@ public static class ScoreSavingSysytem
         catch (FileNotFoundException)
         {
             FileStream emergencyStream = new FileStream(savePath, FileMode.Create);
-            float startingHighscore = 0f;
+            float startingHighscore = -1f;
             binaryFormatter.Serialize(emergencyStream, startingHighscore);
             emergencyStream.Close();
         }
