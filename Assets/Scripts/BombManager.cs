@@ -3,23 +3,22 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public class BombManager : IBombManager // Dodac coroutine runnera zzeby mozna bylo robic z niego instantiate
+public class BombManager : IBombManager
 {
-
     [SerializeField] List<GameObject> ActiveBombs = new List<GameObject>();
-    [SerializeField] List<GameObject> InactiveBombs = new List<GameObject>();
 
     GameObject bombPrefab;
     Canvas spawningCanvas;
     ICoroutineRunner coroutineRunner;
     GameObject currentBomb;
     RectTransform currentBombRectTransform;
+    BombPool bombPool;
 
     public Vector3 ImageScale;
 
     internal int gameplayWidthMin,gameplayWidthMax,gameplayHeightMin,gameplayHeightMax;
     bool keepBombing;
-    float bombInterval;
+    float bombInterval,bombTimerMin,bombTimerMax;
 
     Action endTheGame; // callback do wszystkiego ze gra sie skonczyla
 
@@ -33,9 +32,10 @@ public class BombManager : IBombManager // Dodac coroutine runnera zzeby mozna b
         this.spawningCanvas = spawningCanvas;
 
         bombInterval = 2f;
+        bombTimerMin = 2f;
+        bombTimerMax = 4f;
 
-     //   List<GameObject> ActiveBombs = new List<GameObject>();
-    //    List<GameObject> InactiveBombs = new List<GameObject>();
+        bombPool = new BombPool(ActiveBombs,bombPrefab); 
     }
 
     public void StartRunning()
@@ -46,33 +46,78 @@ public class BombManager : IBombManager // Dodac coroutine runnera zzeby mozna b
         coroutineRunner.StartCoroutine(spawnBombs());
     }
 
-    IEnumerator spawnBombs()
+    IEnumerator spawnBombs() //poziom trudnosci kalibrujemy tu
     {
         while (keepBombing)
         {
-            BombPlace();
-            bombInterval = Mathf.Max(0.2f, bombInterval - 0.1f);
+            BombPlace(bombTimerMin,bombTimerMax);
+            bombInterval = Mathf.Max(0.3f, bombInterval - 0.05f);
+
+            if(bombInterval < 1f)
+            {
+                ReduceTimer();
+            }
+
             yield return new WaitForSeconds(bombInterval);
         }
     }
 
-    public void BombPlace()
+    public void BombPlace(float bombTimerMin, float bombTimerMax)
     {
-        GameObject currentBomb = GameObject.Instantiate(bombPrefab);
-        currentBombRectTransform = currentBomb.GetComponent<RectTransform>();
+        Vector2 possibleCoordinates = GetRandomBombPosition(0);
 
-        currentBomb.transform.SetParent(spawningCanvas.transform);
-        currentBombRectTransform.anchoredPosition = GetRandomBombPosition();
-        currentBomb.transform.localScale = ImageScale; // dopasowuje rozmair bomb do ekranu
-        currentBomb.GetComponent<Bomb>().CircleReset(5f,GetBombStatus);
-        ActiveBombs.Add(currentBomb);
+        if (possibleCoordinates.x > 0) // failsafe aby nie szukac nowego miejsca w nieskonczonosc
+        {
+            GameObject currentBomb = bombPool.TakeBombFromPool();
+            currentBombRectTransform = currentBomb.GetComponent<RectTransform>();
+
+            currentBomb.transform.SetParent(spawningCanvas.transform);
+            currentBomb.transform.SetAsFirstSibling();
+            currentBombRectTransform.anchoredPosition = possibleCoordinates;
+            int bombType = GetRandomBombType();
+            currentBomb.transform.localScale = ImageScale; // dopasowuje rozmiar bomb do ekranu
+            currentBomb.GetComponent<Bomb>().CircleReset(bombType == 0 ? UnityEngine.Random.Range(bombTimerMin, bombTimerMax) : 3f, GetBombStatus, bombType);
+        }
+        else // "kara" zeby nie oplacalo sie trzymac calego ekranu w bombach
+            ReduceTimer();
     }
 
-    Vector2 GetRandomBombPosition()
+    Vector2 GetRandomBombPosition(int triesTaken)
     {
+        if(triesTaken > 20)
+        {
+            Debug.Log("No suitable place for a bomb was found");
+            return new Vector2(-1, -1);
+        }
+
         Vector2 tempVector = new Vector2(UnityEngine.Random.Range(gameplayWidthMin,gameplayWidthMax),
             UnityEngine.Random.Range(gameplayHeightMin,gameplayHeightMax));
+
+        if (ActiveBombs.Count > 0)
+        {
+            foreach (GameObject currentBomb in ActiveBombs)
+            {
+                currentBombRectTransform = currentBomb.GetComponent<RectTransform>();
+                float distanceToCurrentBomb = Mathf.Sqrt(Mathf.Pow((currentBombRectTransform.anchoredPosition.x - tempVector.x), 2) 
+                    + Mathf.Pow((currentBombRectTransform.anchoredPosition.y - tempVector.y), 2));
+                if (distanceToCurrentBomb < 130f) // promien bomby to 64
+                {
+                    triesTaken++;
+                    return GetRandomBombPosition(triesTaken);
+                }
+            }
+        }
         return tempVector;
+    }
+
+    int GetRandomBombType()
+    {
+        float randomizer = UnityEngine.Random.Range(0f, 1f);
+
+        if (randomizer <= 0.1)
+            return 1;
+        else 
+            return 0;
     }
 
     internal void GetBombStatus(GameObject invokingBomb,int messageID)
@@ -81,25 +126,35 @@ public class BombManager : IBombManager // Dodac coroutine runnera zzeby mozna b
         {
             case 0: //wylaczono bombe
                 invokingBomb.SetActive(false);
-                ActiveBombs.Remove(invokingBomb);
-                InactiveBombs.Add(invokingBomb);
+                bombPool.ReturnBombToPool(invokingBomb);
 
                 break;
-            case 1: //bomba wybuchla
+            case 1: //bomba wybuchla lub tapnieto czarna
                 invokingBomb.SetActive(false);
                 keepBombing = false;
-                endTheGame.Invoke();
+
+                endTheGame.Invoke(); //callback do konca gry
 
                 foreach (GameObject temp in ActiveBombs)
                 {
                     temp.GetComponent<Bomb>().isArmed = false; // tutaj mozna dodac ze szybciej bomby wybuchaja czy cos za pomoca detonateSpeedFactor
                 }
-                // tutaj trzeba dodac wybuch bomby, pokazanie czasu (callback do UI)
+               
                 Debug.Log(invokingBomb + " exploded");
+                break;
+            case 2: // czarna bomba znika
+                invokingBomb.SetActive(false);
+                bombPool.ReturnBombToPool(invokingBomb);
                 break;
             default:
                 Debug.Log("Recieved unusual messageID: " + messageID);
                 break;
         }
+    }
+
+    void ReduceTimer()
+    {
+        bombTimerMin = Mathf.Max(0.5f, bombTimerMin - 0.001f / bombInterval);
+        bombTimerMax = Mathf.Max(1f, bombTimerMin - 0.001f / bombInterval);
     }
 }

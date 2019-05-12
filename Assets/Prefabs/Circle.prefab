@@ -126,7 +126,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TimeDisplay: {fileID: 2374493821631425105}
+  Background: {fileID: 218693750956424426}
   timeToDetonate: 0
+  isArmed: 0
 --- !u!222 &7119600031013444561
 CanvasRenderer:
   m_ObjectHideFlags: 0

@@ -17,6 +17,7 @@ public class GameplaySceneInitializer : MonoBehaviour
         BombManager bombManager = new BombManager(coroutineRunner, bombPrefab, canvas, timerAndDisplay.GetComponent<TimerAndDisplay>().EndGameActions);
         screenSpaceManager.bombManager = bombManager;
         screenSpaceManager.CalculateGameplayArea(); // przesyla policzone dane do bombManagera
+        timerAndDisplay.GetComponent<TimerAndDisplay>().ObtainCoroutineRunner(coroutineRunner);
         bombManager.StartRunning();
     }
 }

@@ -8,7 +8,7 @@ public class HighscoreDisplay : MonoBehaviour
     {
         float highscore = ScoreSavingSysytem.ReadHighscore();
 
-        if(highscore < 0.1f)
+        if(highscore < 0.001f)
         textField.text = "Highscore:\nNo games finished yet!";
         else
         {

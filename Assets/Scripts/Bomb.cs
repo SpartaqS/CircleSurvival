@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class Bomb : MonoBehaviour, IPointerDownHandler
+public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
 {
     [SerializeField] Image TimeDisplay;
 
@@ -14,6 +14,8 @@ public class Bomb : MonoBehaviour, IPointerDownHandler
 
     public bool isArmed;
     float detonationSpeedFactor = 1f;
+
+    int bombType; // 0 - zielona , 1 - czarna donttap
 
     Action<GameObject,int> bombStatus;
 
@@ -24,7 +26,8 @@ public class Bomb : MonoBehaviour, IPointerDownHandler
 
     void IPointerDownHandler.OnPointerDown(PointerEventData eventData) 
     {
-        bombStatus.Invoke(this.gameObject, 0);
+        if(isArmed)
+            bombStatus.Invoke(this.gameObject, bombType);
     }
 
     void Update()
@@ -32,18 +35,31 @@ public class Bomb : MonoBehaviour, IPointerDownHandler
         if (isArmed)
         {
             timeToDetonate -= Time.deltaTime * detonationSpeedFactor;
-            TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
+            if(bombType == 0)
+                TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
             if (timeToDetonate <= 0)
-                bombStatus.Invoke(this.gameObject, 1);
+            {
+                isArmed = false;
+                bombStatus.Invoke(this.gameObject, bombType + 1);
+            }
         }
     }
 
-    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatus)
+    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatusManager, int bombType)
     {
         Debug.Log("Circle spawned");
         this.timeToDetonate = timeToDetonate;
         startingDetonateTime = timeToDetonate;
-        this.bombStatus += bombStatus;
+        this.bombStatus = null;
+        this.bombStatus += bombStatusManager;
+        this.bombType = bombType;
+
+        TimeDisplay.fillAmount = 1;
+        if (bombType == 0)
+            TimeDisplay.color = Color.green;
+        else
+            TimeDisplay.color = Color.black;
+
         isArmed = true;
     }
 }

@@ -9,8 +9,11 @@ public class TimerAndDisplay : MonoBehaviour
     private bool tickTime = true;
     string minutes, seconds, miliseconds;
 
-    [SerializeField] Text displayedText;
-    // Start is called before the first frame update
+    [SerializeField] Text displayedText = null;
+    [SerializeField] GameObject gameOverButton = null;
+    [SerializeField] GameObject gameOverMessage = null;
+
+    ICoroutineRunner coroutineRunner = null;
     void Start()
     {
         time = 0f;
@@ -30,27 +33,36 @@ public class TimerAndDisplay : MonoBehaviour
 
             displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds;
         }
-        else
-        {
-            float latestTime = time;
-            if (ScoreSavingSysytem.ReadHighscore() < latestTime)
-            {
-                ScoreSavingSysytem.SaveHighscore(latestTime);
-                displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds + "\nNew highscore!";
-            }
-            else
-            {
-                displayedText.text = "Time: " + minutes + ":" + seconds + ":" + miliseconds+ "\nBetter luck next time!";
-            }
-        }
-
-
     }
     public void EndGameActions()
     {
         Debug.Log("Timer got the message");
-
         tickTime = false;
+        gameOverMessage.GetComponent<Text>().text += "\n"+ minutes + ":" + seconds + ":" + miliseconds;
+        coroutineRunner.StartCoroutine(ActivateEndButtonDelayed());
+        float latestTime = time;
+        if (ScoreSavingSysytem.ReadHighscore() < latestTime)
+        {
+            ScoreSavingSysytem.SaveHighscore(latestTime);
+            gameOverMessage.GetComponent<Text>().text += "\nNew highscore!";
+        }
+        else
+        {
+            gameOverMessage.GetComponent<Text>().text += "\nBetter luck next time!";
+        }
+        gameOverMessage.SetActive(true);
+    }
 
+    IEnumerator ActivateEndButtonDelayed()
+    {
+        yield return new WaitForSeconds(0.5f);
+        gameOverMessage.GetComponent<Text>().text += "\n\nTap anywhere\nto continue";
+        gameOverButton.SetActive(true);
+
+    }
+
+    public void ObtainCoroutineRunner(ICoroutineRunner coroutineRunner)
+    {
+        this.coroutineRunner = coroutineRunner;
     }
 }

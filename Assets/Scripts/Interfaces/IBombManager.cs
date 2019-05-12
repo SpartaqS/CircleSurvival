@@ -1,5 +1,4 @@
-﻿using UnityEngine;
-public interface IBombManager
+﻿public interface IBombManager
 {
-    void BombPlace();
+    void BombPlace(float bombTimerMin, float bombTimerMax);
 }
