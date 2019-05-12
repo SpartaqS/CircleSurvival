@@ -3,12 +3,12 @@ using UnityEngine.UI;
 
 public class HighscoreDisplay : MonoBehaviour
 {
-    [SerializeField] Text textField = null;
-    public void CheckHighscore()
+    [SerializeField] Text textField;
+    void Awake()
     {
         float highscore = ScoreSavingSysytem.ReadHighscore();
 
-        if(highscore < 0f)
+        if(highscore < 0.001f)
         textField.text = "Highscore:\nNo games finished yet!";
         else
         {

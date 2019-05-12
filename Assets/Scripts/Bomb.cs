@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
 {
-    [SerializeField] Image TimeDisplay = null;
+    [SerializeField] Image TimeDisplay;
 
     float startingDetonateTime;
     [SerializeField] float timeToDetonate;

@@ -7,8 +7,8 @@ public class GameplaySceneInitializer : MonoBehaviour
     [SerializeField] ScreenSpaceManager screenSpaceManager = null;
     [SerializeField] GameObject bombPrefab = null;
     [SerializeField] Canvas canvas = null;
-    [SerializeField] GameObject timerAndDisplay = null;
-    [SerializeField] GameObject coroutineRunnerPrefab = null;
+    [SerializeField] GameObject timerAndDisplay;
+    [SerializeField] GameObject coroutineRunnerPrefab;
     ICoroutineRunner coroutineRunner;
     void Start()
     {
