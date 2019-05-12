@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.Audio;
 
 public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
 {
@@ -13,7 +14,7 @@ public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
     [SerializeField] float timeToDetonate;
 
     public bool isArmed;
-    float detonationSpeedFactor = 1f;
+    public float detonationSpeedFactor = 1f;
 
     int bombType; // 0 - zielona , 1 - czarna donttap
 
@@ -40,18 +41,22 @@ public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
             if (timeToDetonate <= 0)
             {
                 isArmed = false;
-                bombStatus.Invoke(this.gameObject, bombType + 1);
+                int invokeOffset = 1;
+                if (detonationSpeedFactor > 2f)
+                    invokeOffset = 4;
+                bombStatus.Invoke(this.gameObject, bombType + invokeOffset);
             }
         }
     }
 
-    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatusManager, int bombType)
+    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatusManager, int bombType, Action<GameObject, int> bombStatusExplodeFX)
     {
         Debug.Log("Circle spawned");
         this.timeToDetonate = timeToDetonate;
         startingDetonateTime = timeToDetonate;
         this.bombStatus = null;
         this.bombStatus += bombStatusManager;
+        this.bombStatus += bombStatusExplodeFX;
         this.bombType = bombType;
 
         TimeDisplay.fillAmount = 1;

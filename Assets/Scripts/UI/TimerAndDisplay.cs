@@ -36,7 +36,6 @@ public class TimerAndDisplay : MonoBehaviour
     }
     public void EndGameActions()
     {
-        Debug.Log("Timer got the message");
         tickTime = false;
         gameOverMessage.GetComponent<Text>().text += "\n"+ minutes + ":" + seconds + ":" + miliseconds;
         coroutineRunner.StartCoroutine(ActivateEndButtonDelayed());

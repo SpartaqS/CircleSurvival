@@ -13,6 +13,7 @@ public class BombManager : IBombManager
     GameObject currentBomb;
     RectTransform currentBombRectTransform;
     BombPool bombPool;
+    ExplosionManager explosionManager;
 
     public Vector3 ImageScale;
 
@@ -22,7 +23,7 @@ public class BombManager : IBombManager
 
     Action endTheGame; // callback do wszystkiego ze gra sie skonczyla
 
-    public BombManager(ICoroutineRunner coroutineRunner, GameObject bombPrefab, Canvas spawningCanvas, Action endGameHighscore)
+    public BombManager(ICoroutineRunner coroutineRunner, GameObject bombPrefab, Canvas spawningCanvas, Action endGameHighscore,ExplosionManager explosionManager)
     {
         Debug.Log("BombManager created");
         endTheGame += endGameHighscore;
@@ -30,6 +31,7 @@ public class BombManager : IBombManager
         this.coroutineRunner = coroutineRunner;
         this.bombPrefab = bombPrefab;
         this.spawningCanvas = spawningCanvas;
+        this.explosionManager = explosionManager;
 
         bombInterval = 2f;
         bombTimerMin = 2f;
@@ -76,7 +78,7 @@ public class BombManager : IBombManager
             currentBombRectTransform.anchoredPosition = possibleCoordinates;
             int bombType = GetRandomBombType();
             currentBomb.transform.localScale = ImageScale; // dopasowuje rozmiar bomb do ekranu
-            currentBomb.GetComponent<Bomb>().CircleReset(bombType == 0 ? UnityEngine.Random.Range(bombTimerMin, bombTimerMax) : 3f, GetBombStatus, bombType);
+            currentBomb.GetComponent<Bomb>().CircleReset(bombType == 0 ? UnityEngine.Random.Range(bombTimerMin, bombTimerMax) : 3f, GetBombStatus, bombType, explosionManager.DoExplosionEffect);
         }
         else // "kara" zeby nie oplacalo sie trzymac calego ekranu w bombach
             ReduceTimer();
@@ -125,29 +127,23 @@ public class BombManager : IBombManager
         switch (messageID)
         {
             case 0: //wylaczono bombe
-                invokingBomb.SetActive(false);
                 bombPool.ReturnBombToPool(invokingBomb);
-
                 break;
             case 1: //bomba wybuchla lub tapnieto czarna
-                invokingBomb.SetActive(false);
+                //invokingBomb.SetActive(false);
                 keepBombing = false;
 
                 endTheGame.Invoke(); //callback do konca gry
 
                 foreach (GameObject temp in ActiveBombs)
                 {
-                    temp.GetComponent<Bomb>().isArmed = false; // tutaj mozna dodac ze szybciej bomby wybuchaja czy cos za pomoca detonateSpeedFactor
+                    temp.GetComponent<Bomb>().detonationSpeedFactor = 5f; // tutaj mozna dodac ze szybciej bomby wybuchaja czy cos za pomoca detonateSpeedFactor
                 }
-               
-                Debug.Log(invokingBomb + " exploded");
                 break;
             case 2: // czarna bomba znika
-                invokingBomb.SetActive(false);
                 bombPool.ReturnBombToPool(invokingBomb);
                 break;
             default:
-                Debug.Log("Recieved unusual messageID: " + messageID);
                 break;
         }
     }
