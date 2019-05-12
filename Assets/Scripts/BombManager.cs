@@ -53,7 +53,7 @@ public class BombManager : IBombManager
         while (keepBombing)
         {
             BombPlace(bombTimerMin,bombTimerMax);
-            bombInterval = Mathf.Max(0.3f, bombInterval - 0.05f);
+            bombInterval = Mathf.Max(0.25f, bombInterval - 0.05f);
 
             if(bombInterval < 1f)
             {
@@ -150,7 +150,7 @@ public class BombManager : IBombManager
 
     void ReduceTimer()
     {
-        bombTimerMin = Mathf.Max(0.5f, bombTimerMin - 0.001f / bombInterval);
-        bombTimerMax = Mathf.Max(1f, bombTimerMin - 0.001f / bombInterval);
+        bombTimerMin = Mathf.Max(0.4f, bombTimerMin - 0.001f / bombInterval);
+        bombTimerMax = Mathf.Max(0.9f, bombTimerMin - 0.001f / bombInterval);
     }
 }
