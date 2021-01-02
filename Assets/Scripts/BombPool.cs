@@ -2,38 +2,41 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BombPool : IBombPool
+namespace CircleSurvival
 {
-    [SerializeField] List<GameObject> ActiveBombs;
-    [SerializeField] Stack<GameObject> InactiveBombs = new Stack<GameObject>();
-
-    GameObject bombPrefab;
-
-    public BombPool(List<GameObject> ActiveBombs, GameObject bombPrefab)
+    public class BombPool : IBombPool
     {
-        this.ActiveBombs = ActiveBombs;
-        this.bombPrefab = bombPrefab;
-    }
+        [SerializeField] List<GameObject> ActiveBombs;
+        [SerializeField] Stack<GameObject> InactiveBombs = new Stack<GameObject>();
 
-    public GameObject TakeBombFromPool()
-    {
-        GameObject currentBomb = null;
+        GameObject bombPrefab;
 
-        if (InactiveBombs.Count < 1)
+        public BombPool(List<GameObject> ActiveBombs, GameObject bombPrefab)
         {
-            currentBomb = GameObject.Instantiate(bombPrefab);
+            this.ActiveBombs = ActiveBombs;
+            this.bombPrefab = bombPrefab;
         }
-        else
+
+        public GameObject TakeBombFromPool()
         {
-            currentBomb = InactiveBombs.Pop();
-            currentBomb.SetActive(true);
+            GameObject currentBomb = null;
+
+            if (InactiveBombs.Count < 1)
+            {
+                currentBomb = GameObject.Instantiate(bombPrefab);
+            }
+            else
+            {
+                currentBomb = InactiveBombs.Pop();
+                currentBomb.SetActive(true);
+            }
+            ActiveBombs.Add(currentBomb);
+            return currentBomb;
         }
-        ActiveBombs.Add(currentBomb);
-        return currentBomb;
-    }
-    public void ReturnBombToPool(GameObject currentBomb)
-    {
-        ActiveBombs.Remove(currentBomb);
-        InactiveBombs.Push(currentBomb);
+        public void ReturnBombToPool(GameObject currentBomb)
+        {
+            ActiveBombs.Remove(currentBomb);
+            InactiveBombs.Push(currentBomb);
+        }
     }
 }

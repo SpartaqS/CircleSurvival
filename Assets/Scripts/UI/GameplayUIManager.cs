@@ -2,19 +2,22 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
-public class GameplayUIManager : MonoBehaviour
+namespace CircleSurvival
 {
-    public Button mainMenuButton;
-    public Button endGameButton;
-
-    void Start()
+    public class GameplayUIManager : MonoBehaviour
     {
-        mainMenuButton.onClick.AddListener(ClickAction);
-        endGameButton.onClick.AddListener(ClickAction);
-    }
+        public Button mainMenuButton;
+        public Button endGameButton;
 
-    void ClickAction()
-    {
-        SceneManager.LoadScene("MainMenu");
+        void Start()
+        {
+            mainMenuButton.onClick.AddListener(ClickAction);
+            endGameButton.onClick.AddListener(ClickAction);
+        }
+
+        void ClickAction()
+        {
+            SceneManager.LoadScene("MainMenu");
+        }
     }
 }

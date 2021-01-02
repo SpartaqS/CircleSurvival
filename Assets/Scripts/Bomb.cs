@@ -6,65 +6,74 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.Audio;
 
-public class Bomb : MonoBehaviour, IPointerDownHandler , IBomb
+namespace CircleSurvival
 {
-    [SerializeField] Image TimeDisplay = null;
-
-    float startingDetonateTime;
-    [SerializeField] float timeToDetonate;
-
-    public bool isArmed;
-    public float detonationSpeedFactor = 1f;
-
-    int bombType; // 0 - zielona , 1 - czarna donttap
-
-    Action<GameObject,int> bombStatus;
-
-    Bomb()
+    public enum BombType
     {
-        isArmed = false;
+        disarmable = 0,
+        nonDisarmable = 1,
+        dontTapExpired = 2,
     }
 
-    void IPointerDownHandler.OnPointerDown(PointerEventData eventData) 
+    public class Bomb : MonoBehaviour, IPointerDownHandler, IBomb
     {
-        if(isArmed)
-            bombStatus.Invoke(this.gameObject, bombType);
-    }
+        [SerializeField] Image TimeDisplay = null;
 
-    void Update()
-    {
-        if (isArmed)
+        float startingDetonateTime;
+        [SerializeField] float timeToDetonate;
+
+        public bool isArmed;
+        public float detonationSpeedFactor = 1f;
+
+        BombType bombType;
+
+        Action<GameObject, BombType> bombStatus;
+
+        Bomb()
         {
-            timeToDetonate -= Time.deltaTime * detonationSpeedFactor;
-            if(bombType == 0)
-                TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
-            if (timeToDetonate <= 0)
+            isArmed = false;
+        }
+
+        void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+        {
+            if (isArmed)
+                bombStatus.Invoke(this.gameObject, bombType);
+        }
+
+        void Update()
+        {
+            if (isArmed)
             {
-                isArmed = false;
-                int invokeOffset = 1;
-                if (detonationSpeedFactor > 2f)
-                    invokeOffset = 4;
-                bombStatus.Invoke(this.gameObject, bombType + invokeOffset);
+                timeToDetonate -= Time.deltaTime * detonationSpeedFactor;
+                if (bombType == BombType.disarmable)
+                    TimeDisplay.fillAmount = Mathf.Max(0, timeToDetonate / startingDetonateTime);
+                if (timeToDetonate <= 0)
+                {
+                    isArmed = false;
+                    int invokeOffset = 1;  // bomba do rozbrojenia, ktora wybucha moze byc traktowana tak samo jak czarna bomba ktora tapnieto. czarna bomba ktorej konczy sie czas po prostu znika
+                    if (detonationSpeedFactor > 2f)
+                        invokeOffset = 4; // bomba wybucha już po przegranej: BombManager nie musi rozpatrywać tej bomby
+                    bombStatus.Invoke(this.gameObject, bombType + invokeOffset);
+                }
             }
         }
-    }
 
-    public void CircleReset(float timeToDetonate, Action<GameObject, int> bombStatusManager, int bombType, Action<GameObject, int> bombStatusExplodeFX)
-    {
-        Debug.Log("Circle spawned");
-        this.timeToDetonate = timeToDetonate;
-        startingDetonateTime = timeToDetonate;
-        this.bombStatus = null;
-        this.bombStatus += bombStatusManager;
-        this.bombStatus += bombStatusExplodeFX;
-        this.bombType = bombType;
+        public void CircleReset(float timeToDetonate, Action<GameObject, BombType> bombStatusManager, BombType bombType, Action<GameObject, BombType> bombStatusExplodeFX)
+        {
+            this.timeToDetonate = timeToDetonate;
+            startingDetonateTime = timeToDetonate;
+            this.bombStatus = null;
+            this.bombStatus += bombStatusManager;
+            this.bombStatus += bombStatusExplodeFX;
+            this.bombType = bombType;
 
-        TimeDisplay.fillAmount = 1;
-        if (bombType == 0)
-            TimeDisplay.color = Color.green;
-        else
-            TimeDisplay.color = Color.black;
+            TimeDisplay.fillAmount = 1;
+            if (bombType == BombType.disarmable)
+                TimeDisplay.color = Color.green;
+            else // bombType = BombType.nonDisarmable
+                TimeDisplay.color = Color.black;
 
-        isArmed = true;
+            isArmed = true;
+        }
     }
 }

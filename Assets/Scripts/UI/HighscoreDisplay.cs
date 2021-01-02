@@ -1,25 +1,25 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class HighscoreDisplay : MonoBehaviour
+namespace CircleSurvival
 {
-    [SerializeField] Text textField = null;
-    public void CheckHighscore()
+    public class HighscoreDisplay : MonoBehaviour
     {
-        float highscore = ScoreSavingSysytem.ReadHighscore();
-
-        if(highscore < 0f)
-        textField.text = "Highscore:\nNo games finished yet!";
-        else
+        [SerializeField] Text textField = null;
+        public void CheckHighscore()
         {
-            string minutes = ((int)highscore / 60).ToString();
-            string seconds = (highscore % 60).ToString("00");
-            string miliseconds = ((highscore * 100) % 100).ToString("00");
+            float highscore = ScoreSavingSysytem.ReadHighscore();
 
-            textField.text = "Highscore:\n" + minutes + ":" + seconds + ":" + miliseconds;
+            if (highscore < 0f)
+                textField.text = "Highscore:\nNo games finished yet!";
+            else
+            {
+                string minutes = ((int)highscore / 60).ToString();
+                string seconds = (highscore % 60).ToString("00");
+                string miliseconds = ((highscore * 100) % 100).ToString("00");
+
+                textField.text = "Highscore:\n" + minutes + ":" + seconds + ":" + miliseconds;
+            }
         }
-
-        
     }
-
 }

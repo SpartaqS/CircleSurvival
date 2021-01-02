@@ -1,30 +1,40 @@
 ﻿using UnityEngine;
 
-public class ExplosionManager : MonoBehaviour
+namespace CircleSurvival
 {
-    [SerializeField] Canvas spawningCanvas = null;
-    [SerializeField] GameObject ExplosionEffect = null;
-    
-    public void DoExplosionEffect(GameObject invokingBomb, int messageID)
+    public class ExplosionManager : MonoBehaviour
     {
-        if (messageID == 1 || messageID > 3)
+        [SerializeField] Canvas spawningCanvas = null;
+        [SerializeField] GameObject explosionEffect = null;
+
+        AudioSource audioSource = null;
+
+        private void Awake()
         {
-            GameObject explosion = Instantiate(ExplosionEffect, spawningCanvas.transform);
-            explosion.gameObject.transform.SetAsLastSibling();
-            explosion.GetComponent<RectTransform>().anchoredPosition = invokingBomb.GetComponent<RectTransform>().anchoredPosition ;
-            invokingBomb.SetActive(false);
+            audioSource = GetComponent<AudioSource>();
         }
-        if (messageID == 0)
+
+        public void DoExplosionEffect(GameObject invokingBomb, BombType messageID)
         {
-            GetComponent<AudioSource>().pitch = 1f;
-            GetComponent<AudioSource>().Play();
-            invokingBomb.SetActive(false);
-        }
-        if (messageID == 2)
-        {
-            GetComponent<AudioSource>().pitch = 0.8f;
-            GetComponent<AudioSource>().Play();
-            invokingBomb.SetActive(false);
+            if (messageID == BombType.nonDisarmable || messageID > BombType.dontTapExpired) // bomba powinna wybuchnac (skonczyl sie czas / czarna zostala tapnieta)
+            {
+                GameObject explosion = Instantiate(explosionEffect, spawningCanvas.transform);
+                explosion.gameObject.transform.SetAsLastSibling();
+                explosion.GetComponent<RectTransform>().anchoredPosition = invokingBomb.GetComponent<RectTransform>().anchoredPosition;
+                invokingBomb.SetActive(false);
+            }
+            if (messageID == BombType.disarmable) // wylaczono bombe
+            {
+                audioSource.pitch = 1f;
+                audioSource.Play();
+                invokingBomb.SetActive(false);
+            }
+            if (messageID == BombType.dontTapExpired) // czarna bomba zniknela
+            {
+                audioSource.pitch = 0.8f;
+                audioSource.Play();
+                invokingBomb.SetActive(false);
+            }
         }
     }
 }
