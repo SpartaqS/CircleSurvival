@@ -78,7 +78,7 @@ namespace CircleSurvival
                 currentBombRectTransform = currentBomb.GetComponent<RectTransform>();
 
                 currentBomb.transform.SetParent(spawningCanvas.transform);
-                currentBomb.transform.SetAsFirstSibling();
+                currentBomb.transform.SetAsFirstSibling();                
                 currentBombRectTransform.anchoredPosition = possibleCoordinates;
                 BombType bombType = GetRandomBombType();
                 currentBomb.transform.localScale = ImageScale; // dopasowuje rozmiar bomb do ekranu

@@ -15,5 +15,7 @@ namespace CircleSurvival
         public const float MINIMUM_BOMB_INTERVAL = 0.5f;
         public const float LOWEST_MIN_TIMER = 0.4f;
         public const float LOWEST_MAX_TIMER = 0.9f;
+
+        public const int UI_EXPLOSION_OFFSET = 4;
     }
 }

@@ -19,7 +19,7 @@ namespace CircleSurvival
             if (messageID == BombType.nonDisarmable || messageID > BombType.dontTapExpired) // bomba powinna wybuchnac (skonczyl sie czas / czarna zostala tapnieta)
             {
                 GameObject explosion = Instantiate(explosionEffect, spawningCanvas.transform);
-                explosion.gameObject.transform.SetAsLastSibling();
+                explosion.gameObject.transform.SetSiblingIndex(explosion.gameObject.transform.parent.childCount - Constants.UI_EXPLOSION_OFFSET);
                 explosion.GetComponent<RectTransform>().anchoredPosition = invokingBomb.GetComponent<RectTransform>().anchoredPosition;
                 invokingBomb.SetActive(false);
             }
