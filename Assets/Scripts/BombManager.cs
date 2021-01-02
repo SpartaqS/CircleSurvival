@@ -155,7 +155,6 @@ namespace CircleSurvival
         {
             bombTimerMin = Mathf.Max(Constants.LOWEST_MIN_TIMER, bombTimerMin - 0.01f * bombInterval);
             bombTimerMax = Mathf.Max(Constants.LOWEST_MAX_TIMER, bombTimerMax - 0.01f * bombInterval);
-            Debug.Log("min: " + bombTimerMin + " max: " + bombTimerMax);
         }
     }
 }
